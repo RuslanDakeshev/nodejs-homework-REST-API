@@ -9,11 +9,14 @@ const {
 } = require("../../services/authService");
 const { joiRegisterSchema } = require("../../schema/joiRegisterSchema");
 const bCrypt = require("bcrypt");
+const gravatar = require('gravatar')
 
 const registrationController = async (req, res) => {
   const { email, password } = req.body;
 
-  await registration(email, password);
+  const avatarUrl = gravatar.url(email)
+
+  await registration(email, password,avatarUrl);
 
   res.json({ status: "success" });
 };
@@ -42,9 +45,9 @@ const loginController = async (req, res) => {
     return res.status(409).json({ message: "Email in use" });
   }
 
-  if (!(await bCrypt.compare(password, user.password))) {
-    return res.status(409).json({ message: "Wrong password" });
-  }
+  // if (!(await bCrypt.compare(password, user.password))) {
+  //   return res.status(409).json({ message: "Wrong password" });
+  // }
 
   const token = jwt.sign(
     { _id: user._id, cratedAt: user.subscription },
