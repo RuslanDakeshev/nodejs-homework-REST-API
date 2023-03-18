@@ -10,11 +10,15 @@ const {
 const { joiRegisterSchema } = require("../../schema/joiRegisterSchema");
 const bCrypt = require("bcrypt");
 const gravatar = require('gravatar')
+const { BASE_URL } = process.env
+const { sendMail } = require("../../helpers");
+
 
 const registrationController = async (req, res) => {
   const { email, password } = req.body;
 
   const avatarUrl = gravatar.url(email)
+
 
   await registration(email, password,avatarUrl);
 
@@ -41,7 +45,7 @@ const loginController = async (req, res) => {
   const { email, password } = req.body;
   const user = await findUser({ email });
 
-  if (!user) {
+  if (!user || !user.verify) {
     return res.status(409).json({ message: "Email in use" });
   }
 
@@ -81,11 +85,45 @@ const currentUserController = async (req, res) => {
   });
 };
 
+const verifyController = async(req, res) => { 
+  const { verificationToken } = req.params
+  const user = User.findOne({ verificationToken })
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+  }
+  await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: '' })
+  res.status(200).json({ message: "Verification successful" });
+}
+
+
+
+const resendEmailController = async (req, res) => { 
+  const { email } = req.body
+  const user = await User.findOne({ email })
+  if (!user || user.verify) {
+    res.status(400).json({ message: "Verification has already been passed" });
+  }
+
+  const mail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target='_blank' href='${BASE_URL}/api/users/verify/${user.verificationToken}'>Click to verify you email</a>`,
+  };
+
+  await sendMail(mail)
+
+  res.status(200).json({ message:   "Verification email sent" });
+
+
+}
+
 module.exports = {
   registrationController,
   loginController,
   logoutController,
   currentUserController,
+  verifyController,
+  resendEmailController,
 };
 
 // async function register(req, res, next) {

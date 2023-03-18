@@ -2,11 +2,23 @@ const { User } = require("../db/users");
 const bCrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
+const { sendMail } = require("../../helpers");
+const { nanoid } = require("nanoid");
+const{BASE_URL}= process.env
 
 async function registration(email, password) {
   const avatarURL = gravatar.url(email);
-  const user = new User({ email, password,avatarURL});
+  const verificationToken = nanoid();
+  const user = new User({ email, password,avatarURL,verificationToken});
   await user.save();
+
+  const mail = {
+    to:email,
+    subject: "Verify email",
+    html: `<a target='_blank' href='${BASE_URL}/api/users/verify/${verificationToken}'>Click to verify you email</a>`,
+  };
+
+  await sendMail(mail)
 }
 
 async function login(_id, token) {
