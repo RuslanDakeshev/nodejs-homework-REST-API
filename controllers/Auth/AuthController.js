@@ -11,7 +11,7 @@ const { joiRegisterSchema } = require("../../schema/joiRegisterSchema");
 const bCrypt = require("bcrypt");
 const gravatar = require('gravatar')
 const { BASE_URL } = process.env
-const { sendMail } = require("../../helpers");
+const { sendMail } = require("../../helpers/sendEmail");
 
 
 const registrationController = async (req, res) => {

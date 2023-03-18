@@ -6,10 +6,10 @@ const { SENDGRID_API_KEY } = process.env;
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 const mail = {
-  to: "",
-  from: "",
-  subject: "",
-  html: "",
+  to: "ruha08@live.com",
+  from: "bil081@meta.ua",
+  subject: "Когда уже",
+  html: "Пиво",
 };
 
 sgMail

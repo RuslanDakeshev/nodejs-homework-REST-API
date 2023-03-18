@@ -8,7 +8,7 @@ const nodemailerConfig = {
     port: 465,
     secure: true,
     auth: {
-        user:,
+        user:'bil081@meta.ua',
         pass:META_PASSWORD
     }
 }
@@ -16,11 +16,11 @@ const nodemailerConfig = {
 const transport = nodemailer.createTransport(nodemailerConfig)
 
 const mail = {
-    to: '',
-    from: '',
-    subject: '',
-    html: ''
-}
+  to: "ruha08@live.com",
+  from: "bil081@meta.ua",
+  ssubject: "Когда уже",
+  html: "Пиво",
+};
 
 transport.sendMail(mail)
     .then(() => console.log('Email send success'))

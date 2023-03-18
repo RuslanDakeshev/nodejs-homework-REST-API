@@ -2,13 +2,14 @@ const { User } = require("../db/users");
 const bCrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
-const { sendMail } = require("../../helpers");
-const { nanoid } = require("nanoid");
+const { sendMail } = require("../helpers/sendEmail");
+// const { nanoid } = require("nanoid");
+const { v4: uuidv4 } = require("uuid");
 const{BASE_URL}= process.env
 
 async function registration(email, password) {
   const avatarURL = gravatar.url(email);
-  const verificationToken = nanoid();
+  const verificationToken = uuidv4();
   const user = new User({ email, password,avatarURL,verificationToken});
   await user.save();
 
