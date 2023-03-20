@@ -2,24 +2,26 @@ const { User } = require("../db/users");
 const bCrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
-const { sendMail } = require("../helpers/sendEmail");
-// const { nanoid } = require("nanoid");
+const { sendEmail } = require("../helpers/sendEmail");
+
 const { v4: uuidv4 } = require("uuid");
-const{BASE_URL}= process.env
+const { BASE_URL } = process.env;
 
 async function registration(email, password) {
   const avatarURL = gravatar.url(email);
   const verificationToken = uuidv4();
-  const user = new User({ email, password,avatarURL,verificationToken});
+  const user = new User({ email, password, avatarURL, verificationToken });
   await user.save();
 
-  const mail = {
-    to:email,
-    subject: "Verify email",
-    html: `<a target='_blank' href='${BASE_URL}/api/users/verify/${verificationToken}'>Click to verify you email</a>`,
+  const msg = {
+    to: email,
+    from: "bil081@meta.ua",
+    subject: "Verification email address",
+    html: `<p>By clicking on the following link, you are confirming your email address.
+      <a href="http://localhost:3000/api/users/verify/${verificationToken}" target="_blank">Confirm email address</a></p>`,
   };
 
-  await sendMail(mail)
+  await sendEmail(msg);
 }
 
 async function login(_id, token) {
@@ -40,7 +42,7 @@ async function findUserId(_id) {
   return await User.findById(_id);
 }
 
-async function findUser({ email }) {
+async function findUser(email) {
   const user = await User.findOne({ email });
   return user;
 }
@@ -63,5 +65,5 @@ module.exports = {
   findUser,
   logout,
   findUserId,
-  updateUserAvatar
+  updateUserAvatar,
 };

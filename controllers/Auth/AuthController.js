@@ -11,15 +11,18 @@ const { joiRegisterSchema } = require("../../schema/joiRegisterSchema");
 const bCrypt = require("bcrypt");
 const gravatar = require('gravatar')
 const { BASE_URL } = process.env
-const { sendMail } = require("../../helpers/sendEmail");
+// const { sendMail } = require("../../helpers/sendEmail");
+
 
 
 const registrationController = async (req, res) => {
   const { email, password } = req.body;
-
+const user= await findUser(email);
   const avatarUrl = gravatar.url(email)
 
-
+if (user) {
+  return res.status(409).json({ message: "Email in use" });
+}
   await registration(email, password,avatarUrl);
 
   res.json({ status: "success" });
@@ -45,8 +48,13 @@ const loginController = async (req, res) => {
   const { email, password } = req.body;
   const user = await findUser({ email });
 
-  if (!user || !user.verify) {
-    return res.status(409).json({ message: "Email in use" });
+  if (!user || !user.comparePassword(password)) {
+    return res.status(409).json({ message: "Email or password is wrong" });
+  }
+
+
+  if (!user.verify) {
+    return res.status(401).json({ message: "Email in use" });
   }
 
   // if (!(await bCrypt.compare(password, user.password))) {
@@ -87,13 +95,32 @@ const currentUserController = async (req, res) => {
 
 const verifyController = async(req, res) => { 
   const { verificationToken } = req.params
-  const user = User.findOne({ verificationToken })
+  const user = await User.findOne({ verificationToken })
   if (!user) {
     res.status(404).json({ message: "User not found" });
   }
   await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: '' })
   res.status(200).json({ message: "Verification successful" });
 }
+
+// const findUserByVerifyToken = async ({ verificationToken }) => {
+//   const user = await User.findOne({ verificationToken });
+//   return user;
+// };
+
+// const verifyUser = async (_id) => {
+//   await User.findByIdAndUpdate(_id, { verify: true, verificationToken: null });
+// };
+
+// const verifyController = async (req, res) => {
+//   const { verificationToken } = req.params;
+//  const user = await findUserByVerifyToken({ verificationToken });
+//   if (!user) {
+//     res.status(404).json({ message: "User not found" });
+//   }
+//   await verifyUser(user._id);
+//   res.status(200).json({ message: "Verification successful" });
+// };
 
 
 

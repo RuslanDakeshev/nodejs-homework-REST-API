@@ -9,7 +9,7 @@ const mail = {
   to: "ruha08@live.com",
   from: "bil081@meta.ua",
   subject: "Когда уже",
-  html: "Пиво",
+  html: "<h1>Пиво</h1>",
 };
 
 sgMail
