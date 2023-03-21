@@ -46,9 +46,10 @@ const loginController = async (req, res) => {
     return res.status(400).json({ message: "Missing fields" });
   }
   const { email, password } = req.body;
-  const user = await findUser({ email });
+  // const user = await findUser( req.body.email );
+  const user = await findUser(req.body.email);
 
-  if (!user || !user.comparePassword(password)) {
+  if (!user) {
     return res.status(409).json({ message: "Email or password is wrong" });
   }
 
@@ -57,9 +58,9 @@ const loginController = async (req, res) => {
     return res.status(401).json({ message: "Email in use" });
   }
 
-  // if (!(await bCrypt.compare(password, user.password))) {
-  //   return res.status(409).json({ message: "Wrong password" });
-  // }
+  if (!(await bCrypt.compare(password, user.password))) {
+    return res.status(409).json({ message: "Wrong password" });
+  }
 
   const token = jwt.sign(
     { _id: user._id, cratedAt: user.subscription },
@@ -93,13 +94,14 @@ const currentUserController = async (req, res) => {
   });
 };
 
-const verifyController = async(req, res) => { 
+const verifyController = async (req, res) => { 
+  
   const { verificationToken } = req.params
   const user = await User.findOne({ verificationToken })
   if (!user) {
     res.status(404).json({ message: "User not found" });
   }
-  await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: '' })
+  await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: null })
   res.status(200).json({ message: "Verification successful" });
 }
 

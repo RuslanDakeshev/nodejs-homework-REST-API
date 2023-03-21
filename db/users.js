@@ -35,20 +35,20 @@ const usersSchema = new Schema({
   },
 });
 
-// usersSchema.pre("save", async function () {
-//   if (this.isNew) {
-//     this.password = await bCrypt.hash(this.password, 10);
-//   }
-// });
+usersSchema.pre("save", async function () {
+  if (this.isNew) {
+    this.password = await bCrypt.hash(this.password, 10);
+  }
+});
 
 
-usersSchema.method.setPassword = function (password) {
-    this.password = bCrypt.hashSync(password, bCrypt.genSaltSync(6))
-}
+// usersSchema.method.setPassword = function (password) {
+//     this.password = bCrypt.hashSync(password, bCrypt.genSaltSync(6))
+// }
 
-usersSchema.method.validPassword = function (password) {
-  return bCrypt.compareSync(password, this.password);
-};
+// usersSchema.method.validPassword = function (password) {
+//   return bCrypt.compareSync(password, this.password);
+// };
 
 
 
