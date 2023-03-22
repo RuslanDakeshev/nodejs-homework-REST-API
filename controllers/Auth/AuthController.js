@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../../db/users");
+const { User } = require("../../db/users");
 const {
   registration,
   login,
@@ -9,36 +9,22 @@ const {
 } = require("../../services/authService");
 const { joiRegisterSchema } = require("../../schema/joiRegisterSchema");
 const bCrypt = require("bcrypt");
-const gravatar = require('gravatar')
-const { BASE_URL } = process.env
-// const { sendMail } = require("../../helpers/sendEmail");
-
-
+const gravatar = require("gravatar");
+const { BASE_URL } = process.env;
+const { sendEmail } = require("../../helpers/sendEmail");
 
 const registrationController = async (req, res) => {
   const { email, password } = req.body;
-const user= await findUser(email);
-  const avatarUrl = gravatar.url(email)
+  const user = await findUser(email);
+  const avatarUrl = gravatar.url(email);
 
-if (user) {
-  return res.status(409).json({ message: "Email in use" });
-}
-  await registration(email, password,avatarUrl);
+  if (user) {
+    return res.status(409).json({ message: "Email in use" });
+  }
+  await registration(email, password, avatarUrl);
 
   res.json({ status: "success" });
 };
-// const loginController = async (req, res) => {
-//     const { error } = joiRegistrationSchema.validate(req.body);
-//     if (error) {
-//       return res.status(400).json({ message: "Missing fields" });
-//     }
-//     const { email, password } = req.body;
-
-//     const token = await login(email, password)
-
-//     res.json({status:'success', token})
-
-//  };
 
 const loginController = async (req, res) => {
   const { error } = joiRegisterSchema.validate(req.body);
@@ -46,13 +32,12 @@ const loginController = async (req, res) => {
     return res.status(400).json({ message: "Missing fields" });
   }
   const { email, password } = req.body;
-  // const user = await findUser( req.body.email );
+
   const user = await findUser(req.body.email);
 
   if (!user) {
     return res.status(409).json({ message: "Email or password is wrong" });
   }
-
 
   if (!user.verify) {
     return res.status(401).json({ message: "Email in use" });
@@ -79,7 +64,7 @@ const loginController = async (req, res) => {
 const logoutController = async (req, res) => {
   const { _id } = req.user;
   await logout(_id);
-    res.status(204).json({message: "No Content"});
+  res.status(204).json({ message: "No Content" });
 };
 
 const currentUserController = async (req, res) => {
@@ -94,41 +79,22 @@ const currentUserController = async (req, res) => {
   });
 };
 
-const verifyController = async (req, res) => { 
-  
-  const { verificationToken } = req.params
-  const user = await User.findOne({ verificationToken })
+const verifyController = async (req, res) => {
+  const { verificationToken } = req.params;
+  const user = await User.findOne({ verificationToken });
   if (!user) {
     res.status(404).json({ message: "User not found" });
   }
-  await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: null })
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
   res.status(200).json({ message: "Verification successful" });
-}
+};
 
-// const findUserByVerifyToken = async ({ verificationToken }) => {
-//   const user = await User.findOne({ verificationToken });
-//   return user;
-// };
-
-// const verifyUser = async (_id) => {
-//   await User.findByIdAndUpdate(_id, { verify: true, verificationToken: null });
-// };
-
-// const verifyController = async (req, res) => {
-//   const { verificationToken } = req.params;
-//  const user = await findUserByVerifyToken({ verificationToken });
-//   if (!user) {
-//     res.status(404).json({ message: "User not found" });
-//   }
-//   await verifyUser(user._id);
-//   res.status(200).json({ message: "Verification successful" });
-// };
-
-
-
-const resendEmailController = async (req, res) => { 
-  const { email } = req.body
-  const user = await User.findOne({ email })
+const resendEmailController = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
   if (!user || user.verify) {
     res.status(400).json({ message: "Verification has already been passed" });
   }
@@ -139,12 +105,10 @@ const resendEmailController = async (req, res) => {
     html: `<a target='_blank' href='${BASE_URL}/api/users/verify/${user.verificationToken}'>Click to verify you email</a>`,
   };
 
-  await sendMail(mail)
+  await sendEmail(mail);
 
-  res.status(200).json({ message:   "Verification email sent" });
-
-
-}
+  res.status(200).json({ message: "Verification email sent" });
+};
 
 module.exports = {
   registrationController,
